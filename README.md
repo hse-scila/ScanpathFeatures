@@ -1,6 +1,6 @@
 Unzip data.zip and extensive_features.zip. Run notebooks in the following order.
 
 1. `new_features_extraction.ipynb` - creates 5 new features sets for every dataset. Code for features can be found in `src\features\new_features`
-2. `xgboost.ipynb`, `logreg.ipynb`, `catboost.ipynb`, `dl.ipynb`  - run experiments 
+2. `xgboost.ipynb`, `logreg.ipynb`, `catboost.ipynb`, `dl.ipynb`  - run experiments and save feature imprortances
 3. `analysis.ipynb` - collect results into tables
 4. `plots.ipynb` - reproduce paper plots

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Any, Dict, List, Union
 
 import numpy as np
 import pandas as pd
@@ -119,6 +119,94 @@ def save_results_incremental(new_result: Dict[str, Any], results_file: Union[str
         results_df = results_df.sort_values(sort_cols)
 
     results_df.to_csv(results_file, index=False)
+
+
+def _sanitize_filename_component(value: str) -> str:
+    for char in ("/", "\\", ":", "*", "?", '"', "<", ">", "|", "+"):
+        value = str(value).replace(char, "_")
+    return value
+
+
+def feature_importances_path(
+    results_dir: Union[str, Path],
+    dataset: str,
+    label: str,
+    feature_battery: str,
+) -> Path:
+    """Path for per-experiment feature-importance CSV under a results directory."""
+    results_dir = Path(results_dir)
+    safe_dataset = _sanitize_filename_component(dataset)
+    safe_label = _sanitize_filename_component(label)
+    safe_battery = _sanitize_filename_component(feature_battery)
+    return results_dir / "feature_importances" / f"{safe_dataset}__{safe_label}__{safe_battery}.csv"
+
+
+def extract_feature_importances(
+    model: Any,
+    feature_cols: List[str],
+    model_family: str = "xgboost",
+) -> pd.DataFrame:
+    """Extract feature importances from a trained XGBoost or CatBoost model."""
+    n_features = len(feature_cols)
+    importances = np.zeros(n_features, dtype=float)
+
+    if model_family == "xgboost":
+        if hasattr(model, "get_score") and not hasattr(model, "fit"):
+            scores = model.get_score(importance_type="gain")
+            for key, value in scores.items():
+                if key.startswith("f") and key[1:].isdigit():
+                    idx = int(key[1:])
+                    if 0 <= idx < n_features:
+                        importances[idx] = float(value)
+        elif hasattr(model, "feature_importances_"):
+            importances = np.asarray(model.feature_importances_, dtype=float)
+        elif hasattr(model, "get_booster"):
+            scores = model.get_booster().get_score(importance_type="gain")
+            for key, value in scores.items():
+                if key.startswith("f") and key[1:].isdigit():
+                    idx = int(key[1:])
+                    if 0 <= idx < n_features:
+                        importances[idx] = float(value)
+    elif model_family == "catboost":
+        if hasattr(model, "get_feature_importance"):
+            importances = np.asarray(model.get_feature_importance(), dtype=float)
+        elif hasattr(model, "feature_importances_"):
+            importances = np.asarray(model.feature_importances_, dtype=float)
+    else:
+        raise ValueError(f"Unsupported model_family: {model_family}")
+
+    if len(importances) != n_features:
+        raise ValueError(
+            f"Importance length {len(importances)} != n_features {n_features}"
+        )
+
+    imp_df = pd.DataFrame({"feature": list(feature_cols), "importance": importances})
+    return imp_df.sort_values("importance", ascending=False).reset_index(drop=True)
+
+
+def save_feature_importances(
+    model: Any,
+    feature_cols: List[str],
+    results_dir: Union[str, Path],
+    dataset: str,
+    label: str,
+    feature_battery: str,
+    model_family: str = "xgboost",
+    timestamp: str | None = None,
+) -> Path:
+    """Save feature importances for one experiment to CSV."""
+    from datetime import datetime
+
+    output_path = feature_importances_path(results_dir, dataset, label, feature_battery)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    imp_df = extract_feature_importances(model, feature_cols, model_family=model_family)
+    imp_df.insert(0, "dataset", dataset)
+    imp_df.insert(1, "label", label)
+    imp_df.insert(2, "feature_battery", feature_battery)
+    imp_df["timestamp"] = timestamp or datetime.now().isoformat()
+    imp_df.to_csv(output_path, index=False)
+    return output_path
 
 
 def print_results_summary(results_df: pd.DataFrame):

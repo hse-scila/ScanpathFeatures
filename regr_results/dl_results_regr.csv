@@ -1,0 +1,10 @@
+dataset,label,metric
+Cognitive_load_fixations_0.02,effort_label,-0.7556498050689697
+Cognitive_load_fixations_0.02,frustration_label,-0.0333863496780395
+Cognitive_load_fixations_0.02,mental_label,-0.749314546585083
+Cognitive_load_fixations_0.02,performance_label,-0.193530797958374
+Cognitive_load_fixations_0.02,physical_label,-0.0128823518753051
+Cognitive_load_fixations_0.02,temporal_label,-0.1736247539520263
+Emotions_fixations_0.02,Disgust_label,-0.0157443284988403
+Emotions_fixations_0.02,Sadness_label,-4.804134368896485e-05
+Emotions_fixations_0.02,Tenderness_label,-0.003469705581665

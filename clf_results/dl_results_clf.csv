@@ -1,0 +1,16 @@
+dataset,label,metric
+3D_fixations,condition_label,0.1519849900262536
+AFC_fixations,mod_label,0.1447319244678505
+AFC_fixations,scr_label,0.1905514340633035
+APP_fixations,known_label,0.4363821138211382
+APP_fixations,meta_certainty_label,0.1297005489305318
+APP_fixations,mod_label,0.1972855022043417
+Age_study_fixations,meta_age_label,0.2916053886640445
+Gap_fixations,gap_label,0.2138051024605646
+Memory_fixations,condition_label,0.3760373561328721
+Webtask_fixations,familiarity_label,0.1473533619456366
+Webtask_fixations,relevance_label,0.1307058561567579
+Webtask_fixations,search_result_label,0.1285875706214689
+Webtask_school_fixations,familiarity_label,0.2363083164300203
+Webtask_school_fixations,relevance_label,0.1581702421118479
+Webtask_school_fixations,search_result_label,0.1308411214953271
